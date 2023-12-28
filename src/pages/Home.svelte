@@ -5,6 +5,8 @@
 
 	import { initializeStores } from '@skeletonlabs/skeleton';
 	import ProductsList from '../components/ProductsList.svelte';
+	import { onMount } from 'svelte';
+	import axios from 'axios';
 
 	initializeStores();
 
@@ -34,19 +36,56 @@
 		component: 'modalCreateForm'
 	};
 
-	const modalRegistry: Record<string, ModalComponent> = {
-		// Set a unique modal ID, then pass the component reference
-		modalCreateForm: { ref: CreateProductForm }
-		// modalComponentTwo: { ref: ModalComponentTwo },
-		// ...
-	};
-
 	function showModal() {
 		// Panggil modal saat tombol diklik
 		// modalStore.trigger(modalSettings);
 		modalStore.trigger(modal);
 		// console.log('lalalalalaaa')
 	}
+
+	interface Product {
+		id: number;
+		name: string;
+		price: number;
+		imageName: string;
+		imageURL: string;
+		uuid: string;
+	}
+
+	let dataProducts: Product[] = [];
+
+	export const getProducts = async () => {
+		try {
+			// <Product[]> setelah pemanggilan axios.get adalah salah satu cara untuk memberi tahu TypeScript tentang jenis data yang diharapkan yang akan diterima dari respons API.
+			const response = await axios.get<Product[]>(`http://localhost:5000/products`);
+
+			dataProducts = response.data;
+		} catch (error: any) {
+			if (error.response) {
+				alert(error.response.data.msg);
+			} else {
+				console.log(error);
+			}
+		}
+	};
+
+	onMount(async () => {
+		await getProducts();
+		console.log('🚀 ~ file: ProductsList.svelte:11 ~ getProducts ~ response:', dataProducts);
+	});
+
+	const modalRegistry: Record<string, ModalComponent> = {
+		// Set a unique modal ID, then pass the component reference
+		modalCreateForm: {
+			ref: CreateProductForm,
+			props: {
+				// dataProducts, // Meneruskan properti dataProducts
+				getProducts // Meneruskan properti getProducts
+			}
+		}
+		// modalComponentTwo: { ref: ModalComponentTwo },
+		// ...
+	};
 </script>
 
 <div class="flex flex-col justify-center items-center">
@@ -58,5 +97,5 @@
 </div>
 
 <div class="flex w-full justify-center items-center">
-	<ProductsList />
+	<ProductsList {dataProducts} {getProducts} />
 </div>

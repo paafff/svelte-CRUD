@@ -5,6 +5,8 @@
 	import { Modal, getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ModalComponent, ModalStore } from '@skeletonlabs/skeleton';
 
+	import UpdateProductForm from './UpdateProductForm.svelte';
+
 	import { initializeStores } from '@skeletonlabs/skeleton';
 
 	initializeStores();
@@ -20,38 +22,45 @@
 		uuid: string;
 	}
 
-// Di dalam komponen ProductsList
-export let dataProducts: Product[]; // Pastikan dataProducts diterima di sini
-// Terima fungsi getProducts sebagai properti
-export let getProducts: () => Promise<void>;
+	const modal: ModalSettings = {
+		type: 'component',
+		component: 'modalUpdateForm'
+	};
 
-	// export const getProducts = async () => {
-	// 	try {
-	// 		// <Product[]> setelah pemanggilan axios.get adalah salah satu cara untuk memberi tahu TypeScript tentang jenis data yang diharapkan yang akan diterima dari respons API.
-	// 		const response = await axios.get<Product[]>(`http://localhost:5000/products`);
+	let productSelectedUUID: string = '';
 
-	// 		dataProducts = response.data;
-	// 	} catch (error: any) {
-	// 		if (error.response) {
-	// 			alert(error.response.data.msg);
-	// 		} else {
-	// 			console.log(error);
-	// 		}
-	// 	}
-	// };
+	function showModalUpdateProduct(uuid: string, name: string) {
+		// Panggil modal saat tombol diklik
+		// modalStore.trigger(modalSettings);
+		productSelectedUUID = uuid;
+		console.log(
+			'🚀 ~ file: ProductsList.svelte:36 ~ showModalUpdateProduct ~ productSelectedUUID:',
+			productSelectedUUID
+		);
+		modalStore.trigger(modal);
+		console.log(name);
+	}
 
-	// onMount(async () => {
-	// 	await getProducts();
-	// 	console.log('🚀 ~ file: ProductsList.svelte:11 ~ getProducts ~ response:', dataProducts);
-	// });
+	const modalRegistry: Record<string, ModalComponent> = {
+		// Set a unique modal ID, then pass the component reference
+		modalUpdateForm: {
+			ref: UpdateProductForm,
+			get props() {
+				return { productSelectedUUID, getProducts };
+			}
+		}
+		// modalComponentTwo: { ref: ModalComponentTwo },
+		// ...
+	};
 
-	//deleteproduct
-
-	let productToDeleteId: string = '';
+	// Di dalam komponen ProductsList
+	export let dataProducts: Product[]; // Pastikan dataProducts diterima di sini
+	// Terima fungsi getProducts sebagai properti
+	export let getProducts: () => Promise<void>;
 
 	const deleteProduct = async () => {
 		try {
-			await axios.delete(`http://localhost:5000/products/${productToDeleteId}`);
+			await axios.delete(`http://localhost:5000/products/${productSelectedUUID}`);
 
 			alert('product deleted successfully');
 			await getProducts();
@@ -85,7 +94,7 @@ export let getProducts: () => Promise<void>;
 
 	function showModalDeleteProduct(uuid: string, name: string) {
 		//set nilai/value modal
-		productToDeleteId = uuid;
+		productSelectedUUID = uuid;
 		modalDeleteProduct.body = `Are you sure you wish to delete product with ID ${uuid} and name ${name}?`;
 		// Panggil modal saat tombol diklik
 		// modalStore.trigger(modalSettings);
@@ -96,7 +105,7 @@ export let getProducts: () => Promise<void>;
 	}
 </script>
 
-<Modal />
+<Modal components={modalRegistry} />
 
 <div class="flex flex-wrap w-2/3 gap-5 justify-center items-center">
 	{#each dataProducts as product}
@@ -119,11 +128,15 @@ export let getProducts: () => Promise<void>;
 				</div>
 			</section>
 			<footer class="card-footer flex justify-end space-x-5">
-				<button type="button" class="btn rounded-xl variant-filled-secondary">update</button>
+				<button
+					type="button"
+					class="btn rounded-xl variant-filled-secondary"
+					on:click={() => showModalUpdateProduct(product.uuid, product.name)}>update</button
+				>
 				<button
 					type="button"
 					class="btn rounded-xl variant-filled-primary"
-					on:click={()=>showModalDeleteProduct(product.uuid, product.name)}>delete</button
+					on:click={() => showModalDeleteProduct(product.uuid, product.name)}>delete</button
 				>
 			</footer>
 		</div>

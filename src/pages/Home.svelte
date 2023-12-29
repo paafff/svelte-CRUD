@@ -12,25 +12,6 @@
 
 	const modalStore = getModalStore();
 
-	// const modal: ModalSettings = {
-	// 	type: 'prompt',
-	// 	// Data
-	// 	title: 'Enter Name',
-	// 	body: 'Provide your first name in the field below.',
-	// 	// Populates the input value and attributes
-	// 	value: 'Skeleton',
-	// 	valueAttr: { type: 'text', minlength: 3, maxlength: 10, required: true },
-	// 	// Returns the updated response value
-	// 	response: (r: string) => console.log('response:', r)
-	// };
-
-	// function showModal() {
-	// 	// Panggil modal saat tombol diklik
-	// 	// modalStore.trigger(modalSettings);
-	// 	modalStore.trigger(modal);
-	// 	// console.log('lalalalalaaa')
-	// }
-
 	const modal: ModalSettings = {
 		type: 'component',
 		component: 'modalCreateForm'
